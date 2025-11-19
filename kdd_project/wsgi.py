@@ -1,7 +1,9 @@
 import os
 from django.core.wsgi import get_wsgi_application
 
-# CAMBIA ESTO: 'nombre_de_tu_proyecto' por el nombre de la carpeta que tiene el settings.py
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'nombre_de_tu_carpeta_principal.settings')
+# IMPORTANTE: Asegúrate de que 'kdd_project' sea el nombre REAL de la carpeta 
+# donde está settings.py. Si tu carpeta se llama 'my_ml_api', cámbialo aquí.
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'kdd_project.settings')
 
+# Esta es la variable que Gunicorn está buscando y no encuentra:
 application = get_wsgi_application()
