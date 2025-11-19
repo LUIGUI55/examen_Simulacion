@@ -25,13 +25,19 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     # Apps de terceros
     'rest_framework',
+    'corsheaders',  # <-- AGREGA ESTO
+    'rest_framework',
     # Tu App
     'api',
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware', # <-- ESTE DEBE IR PRIMERO (o lo más arriba posible)
+    'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware', # <--- IMPORTANTE PARA RENDER
+
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -88,3 +94,6 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Permitir que CUALQUIER sitio use tu API (Ideal para esta práctica)
+CORS_ALLOW_ALL_ORIGINS = True
