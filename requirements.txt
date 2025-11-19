@@ -1,0 +1,10 @@
+Django>=4.2.0
+djangorestframework
+pandas
+numpy
+scikit-learn
+liac-arff
+gunicorn
+whitenoise
+dj-database-url
+psycopg2-binary

@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KDD Neural Interface</title>
+    <style>
+        :root {
+            --bg-color: #0b0c15;
+            --card-bg: #1f2029;
+            --primary: #00f3ff;
+            /* Cian Cyberpunk */
+            --secondary: #ff0055;
+            /* Rojo Neón */
+            --text: #e0e6ed;
+            --console-bg: #000000;
+            --console-text: #00ff41;
+            /* Verde Terminal */
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1000px;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+
+        header {
+            text-align: center;
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        h1 {
+            font-weight: 300;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--primary);
+            text-shadow: 0 0 10px rgba(0, 243, 255, 0.5);
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        button {
+            background: transparent;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            padding: 1rem;
+            font-size: 0.9rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 4px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        button:hover {
+            background: var(--primary);
+            color: var(--bg-color);
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.6);
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        button.train-btn {
+            border-color: var(--secondary);
+            color: var(--secondary);
+        }
+
+        button.train-btn:hover {
+            background: var(--secondary);
+            color: white;
+            box-shadow: 0 0 15px rgba(255, 0, 85, 0.6);
+        }
+
+        .terminal-window {
+            background: var(--card-bg);
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 500px;
+        }
+
+        .terminal-header {
+            background: #2d2f3b;
+            padding: 0.5rem 1rem;
+            font-size: 0.8rem;
+            color: #888;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #555;
+            margin-right: 5px;
+        }
+
+        .status-indicator.active {
+            background-color: var(--primary);
+            box-shadow: 0 0 8px var(--primary);
+        }
+
+        .status-indicator.error {
+            background-color: var(--secondary);
+        }
+
+        #console-output {
+            flex: 1;
+            background-color: var(--console-bg);
+            color: var(--console-text);
+            padding: 1rem;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9rem;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            line-height: 1.4;
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--card-bg);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #444;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary);
+        }
+
+        .loader {
+            display: none;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--primary);
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <header>
+            <h1>KDD Dataset Control // MLOps</h1>
+        </header>
+
+        <div class="controls">
+            <button onclick="callApi('split')">
+                01. Split Dataset
+            </button>
+
+            <button onclick="callApi('prepare')">
+                02. Clean Data (NaN)
+            </button>
+
+            <button onclick="callApi('pipeline')">
+                03. Test Pipeline
+            </button>
+
+            <button class="train-btn" onclick="callApi('train-local')">
+                ⚠️ Execute Batch Training
+            </button>
+        </div>
+
+        <div class="terminal-window">
+            <div class="terminal-header">
+                <div>
+                    <span id="status-light" class="status-indicator"></span>
+                    <span id="status-text">System Idle</span>
+                </div>
+                <div class="loader" id="loader"></div>
+                <div>Render API Connection</div>
+            </div>
+            <div id="console-output">// Waiting for command input...
+                // Connect to API to begin operations.</div>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // CONFIGURACIÓN: CAMBIA ESTO POR TU URL DE RENDER
+        // ==========================================
+        const API_BASE_URL = "https://tu-app-en-render.onrender.com/api";
+
+        // Función principal para llamar a la API
+        async function callApi(endpoint) {
+            const output = document.getElementById('console-output');
+            const statusText = document.getElementById('status-text');
+            const statusLight = document.getElementById('status-light');
+            const loader = document.getElementById('loader');
+
+            // UI Updates: Loading state
+            output.innerText += `\n\n> Initiating request to /${endpoint}...\n`;
+            output.scrollTop = output.scrollHeight; // Auto-scroll down
+            statusText.innerText = "Processing...";
+            statusLight.className = "status-indicator active";
+            loader.style.display = "block";
+
+            try {
+                // Definir datos dummy para las pruebas que requieren input (Split, Prepare, Pipeline)
+                // El endpoint 'train-local' NO envía body porque lee del disco del servidor.
+                let options = {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                };
+
+                if (endpoint !== 'train-local') {
+                    options.body = JSON.stringify([
+                        // Datos de ejemplo (simulando un par de filas del dataset KDD)
+                        {
+                            "duration": 0, "protocol_type": "tcp", "service": "ftp_data", "flag": "SF",
+                            "src_bytes": 491, "dst_bytes": 0, "land": "0", "wrong_fragment": 0, "urgent": 0,
+                            "class": "normal"
+                        },
+                        {
+                            "duration": 0, "protocol_type": "udp", "service": "private", "flag": "SF",
+                            "src_bytes": 105, "dst_bytes": 146, "land": "0", "wrong_fragment": 0, "urgent": 0,
+                            "class": "anomaly"
+                        },
+                        {
+                            "duration": 0, "protocol_type": "icmp", "service": "ecr_i", "flag": "SF",
+                            "src_bytes": 1032, "dst_bytes": 0, "land": "0", "wrong_fragment": 0, "urgent": 0,
+                            "class": "normal"
+                        }
+                    ]);
+                }
+
+                // Hacer la petición
+                const response = await fetch(`${API_BASE_URL}/${endpoint}/`, options);
+                const data = await response.json();
+
+                // Mostrar resultado
+                output.innerText += `> Server Response [${response.status}]:\n`;
+                output.innerText += JSON.stringify(data, null, 4); // Pretty print JSON
+
+                // Update UI: Success
+                statusText.innerText = "Operation Completed";
+                statusLight.className = "status-indicator"; // Turn off active glow
+
+            } catch (error) {
+                // Update UI: Error
+                output.innerText += `\n> CRITICAL ERROR: ${error.message}`;
+                statusText.innerText = "Connection Failed";
+                statusLight.className = "status-indicator error";
+            } finally {
+                loader.style.display = "none";
+                output.scrollTop = output.scrollHeight;
+            }
+        }
+    </script>
+</body>
+
+</html>
